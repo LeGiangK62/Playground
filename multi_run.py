@@ -71,8 +71,8 @@ if __name__ == "__main__":
     nu = 1
     power_receiver = 0.2
     p_dl = 0.1  # / noise_p
-    num_APs = 80
-    num_UEs = 20
+    num_APs = 20
+    num_UEs = 2
     num_SRs = 2
     num_samples_total = 500  # Total samples to generate
 
