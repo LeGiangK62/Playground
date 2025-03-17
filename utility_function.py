@@ -3,6 +3,8 @@ import cvxpy as cp
 import pickle
 from tqdm import tqdm
 import time
+from itertools import combinations
+
 
 def generate_data(num, num_AP, num_UE, num_SR, optimize=False):
     M = num_AP  # number of access points
@@ -745,42 +747,108 @@ def decouple_optimization(v, varsigma, q_a, q_b, q_c, nu, gamma_thr, p_dl, verbo
     return opt_power
 
 
+def generate_subsets(init_set):
+    """Generate all subsets of size len(init_set) - 1 from a given initial set."""
+    if len(init_set) <= 1:
+        return []  # Stop if we only have one AP left
+    subsets = list(combinations(init_set, len(init_set) - 1))
+    return [set(subset) for subset in subsets]
+
+
 def bb_relaxed(num_APs, num_UEs, v, varsigma, q_a, q_b, q_c, nu, gamma_thr, p_dl):
-
-    active_APs = set(range(num_APs))
+    """
+    Branch-and-Bound with Constraint Relaxation for Active AP Selection and Power Allocation.
+    """
+    cur_level = num_APs
     best_solution = None
-    best_AP_set = None
-    best_sum = None
+    best_AP_set = set(range(num_APs))
+    while cur_level > 1:  # Stop when we have at least one AP
+        all_sets = generate_subsets(best_AP_set)
+        best_solution_perlvl = None
+        best_AP_set_perlvl = None
+        best_sum_perlvl = float('inf')
 
-    all_sets = [active_APs]
+        for current_set in all_sets:
 
-    while all_sets:
-        current_set = all_sets.pop(0)
+            # Extract subset of parameters
+            varsigma_tmp = varsigma[0][list(current_set), :]
+            v_tmp = v[0][list(current_set), :]
+            q_a_tmp = q_a[0][list(current_set)]
+            q_b_tmp = q_b[0][list(current_set)]
+            q_c_tmp = q_c[0][list(current_set)]
 
-        varsigma_tmp = varsigma[0][list(current_set), :]
-        v_tmp = v[0][list(current_set), :]
-        q_a_tmp = q_a[0][list(current_set)]
-        q_b_tmp = q_b[0][list(current_set)]
-        q_c_tmp = q_c[0][list(current_set)]
+            # Solve power allocation
+            power_dl_sol = relaxed_optimization(v_tmp, varsigma_tmp, q_a_tmp, q_b_tmp, q_c_tmp, nu, gamma_thr, p_dl)
 
-        power_dl_sol = decouple_optimization(v_tmp, varsigma_tmp, q_a_tmp, q_b_tmp, q_c_tmp, nu, gamma_thr, p_dl)
+            if power_dl_sol is not None:
+                power_dl_full = np.zeros((num_APs, num_UEs))
+                power_dl_full[list(current_set), :] = power_dl_sol
+                sum_power = np.sum(power_dl_sol)
 
-        if power_dl_sol is not None:
-            power_dl_full = np.zeros((num_APs, num_UEs))
-            power_dl_full[list(current_set), :] = power_dl_sol
-            sum_power = np.sum(power_dl_sol)
+                if best_solution_perlvl is None or sum_power < best_sum_perlvl:
+                    best_solution_perlvl = power_dl_full
+                    best_sum_perlvl = sum_power
+                    best_AP_set_perlvl = current_set
 
-            if best_solution is None or len(current_set) < len(best_AP_set) or sum_power < best_sum:
-                best_solution = power_dl_full
-                best_sum = sum_power
-                best_AP_set = current_set
+        # Update the best found solution at this level
+        if best_sum_perlvl != float('inf'):
+            best_solution = best_solution_perlvl
+            best_AP_set = best_AP_set_perlvl
+            cur_level -= 1
+        else:
+            break  # Stop if no valid solutions were found
+    ap_act_vector = np.zeros(num_APs, dtype=int)  # Initialize a zero vector
+    ap_act_vector[list(best_AP_set)] = 1
 
-            for ap in list(current_set):
-                new_APs = current_set - {ap}
-                if new_APs:  # Ensure at least one AP is active
-                    all_sets.append(new_APs)
+    return ap_act_vector, best_solution
 
-    return best_AP_set, best_solution
+
+def bb_decouple(num_APs, num_UEs, v, varsigma, q_a, q_b, q_c, nu, gamma_thr, p_dl):
+    """
+    Branch-and-Bound with Constraint Relaxation for Active AP Selection and Power Allocation.
+    """
+    cur_level = num_APs
+    best_solution = None
+    best_AP_set = set(range(num_APs))
+    while cur_level > 1:  # Stop when we have at least one AP
+        all_sets = generate_subsets(best_AP_set)
+        best_solution_perlvl = None
+        best_AP_set_perlvl = None
+        best_sum_perlvl = float('inf')
+
+        for current_set in all_sets:
+            # Extract subset of parameters
+            varsigma_tmp = varsigma[0][list(current_set), :]
+            v_tmp = v[0][list(current_set), :]
+            q_a_tmp = q_a[0][list(current_set)]
+            q_b_tmp = q_b[0][list(current_set)]
+            q_c_tmp = q_c[0][list(current_set)]
+
+            # Solve power allocation
+            power_dl_sol = decouple_optimization(v_tmp, varsigma_tmp, q_a_tmp, q_b_tmp, q_c_tmp, nu, gamma_thr, p_dl)
+
+            if power_dl_sol is not None:
+                power_dl_full = np.zeros((num_APs, num_UEs))
+                power_dl_full[list(current_set), :] = power_dl_sol
+                sum_power = np.sum(power_dl_sol)
+
+                if best_solution_perlvl is None or sum_power < best_sum_perlvl:
+                    best_solution_perlvl = power_dl_full
+                    best_sum_perlvl = sum_power
+                    best_AP_set_perlvl = current_set
+
+        # Update the best found solution at this level
+        if best_sum_perlvl != float('inf'):
+            best_solution = best_solution_perlvl
+            best_AP_set = best_AP_set_perlvl
+            cur_level -= 1
+        else:
+            break  # Stop if no valid solutions were found
+
+    ap_act_vector = np.zeros(num_APs, dtype=int)  # Initialize a zero vector
+    ap_act_vector[list(best_AP_set)] = 1
+
+    return ap_act_vector, best_solution
 
 
 def generate_all_data(num_sample, num_APs, num_UEs, num_SRs, gamma_thr, nu,
@@ -844,7 +912,7 @@ def generate_all_data(num_sample, num_APs, num_UEs, num_SRs, gamma_thr, nu,
 
             # Decoupled Constraints
             start_time = time.time()
-            ap_act_decoupled_sol, power_dl_decoupled_sol = bb_relaxed(num_APs, num_UEs, v, varsigma, q_a, q_b, q_c, nu,
+            ap_act_decoupled_sol, power_dl_decoupled_sol = bb_decouple(num_APs, num_UEs, v, varsigma, q_a, q_b, q_c, nu,
                                                        gamma_thr, p_dl)
 
             total_time_decoupled += time.time() - start_time

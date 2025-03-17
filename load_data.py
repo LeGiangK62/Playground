@@ -19,6 +19,8 @@ def load_data_eval(file_name):
     q_c = data.get("q_c", None)
     power_dl_sol_relaxed = data.get("power_dl_sol_relaxed", None)
     power_dl_sol_decoupled = data.get("power_dl_sol_decoupled", None)
+    ap_act_sol_relaxed = data.get("ap_act_relaxed_sol", None)
+    ap_act_sol_decoupled = data.get("ap_act_decoupled_sol", None)
     power_receiver = data.get("power_receiver", None)
     gamma_thr = data.get("gamma_thr", None)
     sum_power_relaxed = data.get("sum_power_relaxed", None)
@@ -30,16 +32,17 @@ def load_data_eval(file_name):
     return (
         varsigma, v, RCS, AP_loc, SR_loc, tar_loc, Pd, q_a, q_b, q_c,
         power_receiver, gamma_thr, sum_power_relaxed, sum_power_relaxed_full, sum_power_decoupled,
+        ap_act_sol_relaxed, ap_act_sol_decoupled,
         power_dl_sol_relaxed, power_dl_sol_decoupled, avg_time_relaxed, avg_time_decoupled
     )
 
 
 if __name__ == '__main__':
-    folder = "Data/12Mar"  # Adjust to your actual folder path
-    output_file = f"{folder}/merged_dataset.pkl"
+    folder = "Data/17Mar"  # Adjust to your actual folder path
+    output_file = f"{folder}/10AP_2UE_2SR.pkl"
     varsigma, v, RCS, AP_loc, SR_loc, tar_loc, Pd, q_a, q_b, q_c, power_receiver, gamma_thr, \
-        sum_power_relaxed, sum_power_relaxed_full, sum_power_decoupled, power_dl_sol_relaxed, power_dl_sol_decoupled, \
-        avg_time_relaxed, avg_time_decoupled = load_data_eval(output_file)
+        sum_power_relaxed, sum_power_relaxed_full, sum_power_decoupled, ap_act_sol_relaxed, ap_act_sol_decoupled, \
+        power_dl_sol_relaxed, power_dl_sol_decoupled, avg_time_relaxed, avg_time_decoupled = load_data_eval(output_file)
 
     print(f'varsigma: {varsigma.shape}')
     print(f'v: {v.shape}')
@@ -55,6 +58,8 @@ if __name__ == '__main__':
     print(f'gamma_thr: {gamma_thr}')
     print(f'sum_power_relaxed: {np.array(sum_power_relaxed).shape}')
     print(f'sum_power_decoupled: {np.array(sum_power_decoupled).shape}')
+    print(f'ap_act_sol_relaxed: {ap_act_sol_relaxed.shape}')
+    print(f'ap_act_sol_decoupled: {ap_act_sol_decoupled.shape}')
     print(f'power_dl_sol_relaxed: {power_dl_sol_relaxed.shape}')
     print(f'power_dl_sol_decoupled: {power_dl_sol_decoupled.shape}')
     print(f'avg_time_relaxed: {avg_time_relaxed}')
