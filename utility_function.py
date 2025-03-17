@@ -482,7 +482,6 @@ def all_bench(num_sample, num_APs, num_UEs, num_SRs, gamma_thr, nu,
             else:
                 continue
 
-
             # Decoupled Constraints
             start_time = time.time()
             random_indices = np.random.permutation(num_APs)
@@ -744,3 +743,181 @@ def decouple_optimization(v, varsigma, q_a, q_b, q_c, nu, gamma_thr, p_dl, verbo
         opt_power = None  # Indicate failure
 
     return opt_power
+
+
+def bb_relaxed(num_APs, num_UEs, v, varsigma, q_a, q_b, q_c, nu, gamma_thr, p_dl):
+
+    active_APs = set(range(num_APs))
+    best_solution = None
+    best_AP_set = None
+    best_sum = None
+
+    all_sets = [active_APs]
+
+    while all_sets:
+        current_set = all_sets.pop(0)
+
+        varsigma_tmp = varsigma[0][list(current_set), :]
+        v_tmp = v[0][list(current_set), :]
+        q_a_tmp = q_a[0][list(current_set)]
+        q_b_tmp = q_b[0][list(current_set)]
+        q_c_tmp = q_c[0][list(current_set)]
+
+        power_dl_sol = decouple_optimization(v_tmp, varsigma_tmp, q_a_tmp, q_b_tmp, q_c_tmp, nu, gamma_thr, p_dl)
+
+        if power_dl_sol is not None:
+            power_dl_full = np.zeros((num_APs, num_UEs))
+            power_dl_full[list(current_set), :] = power_dl_sol
+            sum_power = np.sum(power_dl_sol)
+
+            if best_solution is None or len(current_set) < len(best_AP_set) or sum_power < best_sum:
+                best_solution = power_dl_full
+                best_sum = sum_power
+                best_AP_set = current_set
+
+            for ap in list(current_set):
+                new_APs = current_set - {ap}
+                if new_APs:  # Ensure at least one AP is active
+                    all_sets.append(new_APs)
+
+    return best_AP_set, best_solution
+
+
+def generate_all_data(num_sample, num_APs, num_UEs, num_SRs, gamma_thr, nu,
+              power_receiver, p_dl, data_file_name):
+    varsigma_all = np.zeros((num_sample, num_APs, num_UEs))
+    v_all = np.zeros((num_sample, num_APs, num_UEs))
+    RCS_all = np.zeros((num_sample, num_APs, num_SRs))
+    AP_loc_all = np.zeros((num_sample, num_APs, 2))
+    SR_loc_all = np.zeros((num_sample, num_SRs, 2))
+    tar_loc_all = np.zeros((num_sample, 1, 2))
+    Pd_all = np.zeros((num_sample, num_APs, num_UEs))
+    q_a_all = np.zeros((num_sample, num_APs))
+    q_b_all = np.zeros((num_sample, num_APs))
+    q_c_all = np.zeros((num_sample, num_APs))
+
+    power_sol_all_relaxed = np.zeros((num_sample, num_APs, num_UEs))
+    power_sol_all_relaxed_full = np.zeros((num_sample, num_APs, num_UEs))
+    power_sol_all_decoupled = np.zeros((num_sample, num_APs, num_UEs))
+
+    ap_act_all_relaxed = np.zeros((num_sample, num_APs), dtype=int)
+    ap_act_all_decoupled = np.zeros((num_sample, num_APs), dtype=int)
+
+    sum_power_all_relaxed = []
+    sum_power_all_relaxed_full = []
+    sum_power_all_decoupled = []
+
+    total_time_relaxed = 0
+    total_time_relaxed_full = 0
+    total_time_decoupled = 0
+    count_relaxed = 0
+    count_relaxed_full = 0
+    count_decoupled = 0
+
+    eachSample = 0
+    count = 0
+
+    with tqdm(total=num_sample, desc="Generating Samples", unit="sample") as pbar:
+        while eachSample < num_sample:
+            count += 1
+
+            varsigma, v, RCS, AP_loc, SR_loc, tar_loc, Pd, q_a, q_b, q_c = generate_data(
+                num=1, num_AP=num_APs, num_UE=num_UEs, num_SR=num_SRs, optimize=False
+            )
+
+            # Relaxed Constraints
+            start_time = time.time()
+            power_dl_sol = relaxed_optimization(v[0], varsigma[0], q_a[0], q_b[0], q_c[0], nu, gamma_thr, p_dl)
+            if power_dl_sol is not None:
+                count_relaxed_full += 1
+                total_time_relaxed_full += time.time() - start_time
+                power_dl_relaxed_sol_full = power_dl_sol  # Full
+
+                start_time = time.time()
+                ap_act_relaxed_sol, power_dl_relaxed_sol = bb_relaxed(num_APs, num_UEs, v, varsigma, q_a, q_b, q_c, nu,
+                                                          gamma_thr, p_dl)
+
+                total_time_relaxed += time.time() - start_time
+                count_relaxed += 1
+            else:
+                continue
+
+            # Decoupled Constraints
+            start_time = time.time()
+            ap_act_decoupled_sol, power_dl_decoupled_sol = bb_relaxed(num_APs, num_UEs, v, varsigma, q_a, q_b, q_c, nu,
+                                                       gamma_thr, p_dl)
+
+            total_time_decoupled += time.time() - start_time
+            count_decoupled += 1
+
+            if power_dl_relaxed_sol_full is None or power_dl_relaxed_sol is None or power_dl_decoupled_sol is None:
+                continue
+
+            sum_power_relaxed = np.mean(np.sum(power_dl_relaxed_sol, axis=(0, 1)) + power_receiver * np.sum(ap_act_relaxed_sol))
+            sum_power_relaxed_full = np.mean(np.sum(power_dl_relaxed_sol_full, axis=(0, 1)) + power_receiver * num_APs)
+            sum_power_decoupled = np.mean(np.sum(power_dl_decoupled_sol, axis=(0, 1)) + power_receiver * np.sum(ap_act_decoupled_sol))
+
+            varsigma_all[eachSample, :, :] = varsigma[0]
+            v_all[eachSample, :, :] = v[0]
+            RCS_all[eachSample, :, :] = RCS[0]
+            AP_loc_all[eachSample, :, :] = AP_loc[0]
+            SR_loc_all[eachSample, :, :] = SR_loc[0]
+            tar_loc_all[eachSample, :, :] = tar_loc[0]
+            q_a_all[eachSample, :] = q_a[0]
+            q_b_all[eachSample, :] = q_b[0]
+            q_c_all[eachSample, :] = q_c[0]
+
+            power_sol_all_relaxed[eachSample, :, :] = power_dl_relaxed_sol
+            power_sol_all_relaxed_full[eachSample, :, :] = power_dl_relaxed_sol
+            power_sol_all_decoupled[eachSample, :, :] = power_dl_decoupled_sol
+
+            ap_act_all_relaxed[eachSample, :] = ap_act_relaxed_sol
+            ap_act_all_decoupled[eachSample, :] = ap_act_decoupled_sol
+
+            sum_power_all_relaxed.append(sum_power_relaxed)
+            sum_power_all_relaxed_full.append(sum_power_relaxed_full)
+            sum_power_all_decoupled.append(sum_power_decoupled)
+
+            eachSample += 1
+            pbar.update(1)
+
+    avg_time_relaxed = total_time_relaxed / num_sample
+    avg_time_relaxed_full = total_time_relaxed_full / num_sample
+    avg_time_decoupled = total_time_decoupled / num_sample
+    data_dict = {
+        "varsigma": varsigma_all,
+        "v": v_all,
+        "RCS": RCS_all,
+        "AP_loc": AP_loc_all,
+        "SR_loc": SR_loc_all,
+        "tar_loc": tar_loc_all,
+        "Pd": p_dl,
+        "q_a": q_a_all,
+        "q_b": q_b_all,
+        "q_c": q_c_all,
+        "power_dl_sol_relaxed": power_sol_all_relaxed,
+        "power_dl_sol_relaxed_full": power_sol_all_relaxed_full,
+        "power_dl_sol_decoupled": power_sol_all_decoupled,
+        "ap_act_relaxed_sol": ap_act_all_relaxed,
+        "ap_act_decoupled_sol": ap_act_all_decoupled,
+        "sum_power_relaxed": sum_power_all_relaxed,
+        "sum_power_relaxed_full": sum_power_all_relaxed_full,
+        "sum_power_decoupled": sum_power_all_decoupled,
+        "avg_time_relaxed": avg_time_relaxed,
+        "avg_time_relaxed_full": avg_time_relaxed_full,
+        "avg_time_decoupled": avg_time_decoupled,
+        "num_APs": num_APs,
+        "num_UEs": num_UEs,
+        "num_SRs": num_SRs,
+        "gamma_thr": gamma_thr,
+        "nu": nu,
+        "power_receiver": power_receiver
+    }
+
+    with open(data_file_name, "wb") as f:
+        pickle.dump(data_dict, f)
+
+    print(f"All results saved to {data_file_name}")
+    print(f"Average execution time (Relaxed): {avg_time_relaxed:.6f} seconds")
+    print(f"Average execution time (Decoupled): {avg_time_decoupled:.6f} seconds")
+

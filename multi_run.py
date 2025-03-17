@@ -5,6 +5,8 @@ import mosek
 
 
 mosek.Env().putlicensepath("mosek.lic")
+
+
 def generate_and_save(file_idx, num_samples, num_APs, num_UEs, num_SRs, gamma_thr, nu,
                       power_receiver, p_dl, folder, progress_queue):
     """

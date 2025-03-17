@@ -1,4 +1,4 @@
 Data/
 .idea/
 __pycache__/
-mosek.lic
+#mosek.lic
