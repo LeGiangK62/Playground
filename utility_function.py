@@ -612,23 +612,12 @@ def relaxed_optimization(v, varsigma, q_a, q_b, q_c, nu, gamma_thr, p_dl, verbos
     constraints.append(crlb <= 0)
 
     objective = cp.Minimize(cp.sum(cp.square(y)))
-    # objective = cp.Minimize(cp.sum(rho))
 
     problem = cp.Problem(objective, constraints)
-    # problem.solve()
-    # problem.solve(solver=cp.MOSEK, verbose=verbose)
-    # problem.solve(solver=cp.CLARABEL, verbose=verbose)
     try:
         problem.solve(solver=cp.MOSEK)
     except cp.error.SolverError:
-        # print(f"Solver failed.")
         pass
-        # print(f"Solver failed. Retrying with verbose output...")
-        # try:
-        #     problem.solve(solver=cp.MOSEK, verbose=True)  # Retry with verbose
-        # except cp.error.SolverError as e:
-        #     print(f"Solver still failed. Error: {e}")
-
     if problem.status == "optimal":
         optimized_y_values = np.square(y.value)  # Compute power allocations
     else:
@@ -713,10 +702,6 @@ def decouple_optimization(v, varsigma, q_a, q_b, q_c, nu, gamma_thr, p_dl, verbo
             rhs += cp.multiply(y[m, k], v[m, k])
         constraints.append(cp.SOC(rhs, cp.vstack([cp.multiply(np.sqrt(gamma_thr), t[k])])))
 
-        # constraints.append(lhs <= rhs)
-
-    # constraints.append(crlb <= 0)
-
     objective = cp.Minimize(cp.sum(cp.square(y)))
     constraints.append(cp.sum(cp.square(y), axis=1) <= p_dl)
     # objective = cp.Minimize(cp.sum(rho))
@@ -727,11 +712,6 @@ def decouple_optimization(v, varsigma, q_a, q_b, q_c, nu, gamma_thr, p_dl, verbo
         problem.solve(solver=cp.MOSEK)
     except cp.error.SolverError:
         pass
-        # print(f"Solver failed. Retrying with verbose output...")
-        # try:
-        #     problem.solve(solver=cp.MOSEK, verbose=True)  # Retry with verbose
-        # except cp.error.SolverError as e:
-        #     print(f"Solver still failed. Error: {e}")
     if problem.status == "optimal":
         opt_power = np.square(y.value)  # Compute power allocations
         opt_power_AP = np.sum(opt_power, axis=1, keepdims=True)

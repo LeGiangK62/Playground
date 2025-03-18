@@ -39,7 +39,7 @@ def load_data_eval(file_name):
 
 if __name__ == '__main__':
     folder = "Data/17Mar"  # Adjust to your actual folder path
-    output_file = f"{folder}/10AP_2UE_2SR.pkl"
+    output_file = f"{folder}/eval_10AP_2UE_2S.pkl"
     varsigma, v, RCS, AP_loc, SR_loc, tar_loc, Pd, q_a, q_b, q_c, power_receiver, gamma_thr, \
         sum_power_relaxed, sum_power_relaxed_full, sum_power_decoupled, ap_act_sol_relaxed, ap_act_sol_decoupled, \
         power_dl_sol_relaxed, power_dl_sol_decoupled, avg_time_relaxed, avg_time_decoupled = load_data_eval(output_file)
