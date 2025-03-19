@@ -8,13 +8,13 @@ mosek.Env().putlicensepath("mosek.lic")
 
 # Define multiple scenarios (num_UEs, num_APs)
 all_scenarios = [
-    [5, 50],
+    # [5, 50],
     [6, 30],
-    [10, 30],
-    [10, 50],
-    [15, 50],
-    [20, 50],
-    [20, 80],
+    # [10, 30],
+    # [10, 50],
+    # [15, 50],
+    # [20, 50],
+    # [20, 80],
 ]
 
 # Parameters

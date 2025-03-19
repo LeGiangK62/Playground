@@ -626,56 +626,6 @@ def relaxed_optimization(v, varsigma, q_a, q_b, q_c, nu, gamma_thr, p_dl, verbos
     return optimized_y_values
 
 
-def relaxed_optimization_wrong(v, varsigma, q_a, q_b, q_c, nu, gamma_thr, verbose=False):
-    # Carefully check the normalization of input
-    M, K = varsigma.shape
-    q_a = q_a[:, None]
-    q_b = q_b[:, None]
-    q_c = q_c[:, None]
-    b = q_a + q_b  # Constant matrix
-    A = np.matmul(q_a, q_b.T) - np.matmul(q_c, q_c.T)  # Constant matrix
-
-    y = cp.Variable((M, K), nonneg=True)  # y_{mk} = sqrt(rho_{mk})
-    rho = cp.Variable((M, K), nonneg=True)
-
-    constraints = []
-    for k in range(K):  # for each UE SINR constraint
-        lhs = 1
-        BU = 0
-        for k_prime in range(K):
-            for m in range(M):
-                lhs += cp.multiply(cp.square(y[m, k_prime]), v[m, k_prime] * varsigma[m, k])
-            if k_prime != k:
-                for m in range(M):
-                    term = cp.multiply(y[m, k_prime], v[m, k] * varsigma[m, k] / varsigma[m, k_prime])
-                BU += cp.square(term)
-        lhs += BU
-        lhs = cp.multiply(np.sqrt(gamma_thr), cp.square(lhs))
-        ##
-        rhs = 0
-        for m in range(M):
-            rhs += cp.multiply(y[m, k], v[m, k])
-        constraints.append(lhs <= rhs)
-
-    # rho = cp.square(y)
-    constraints.append(rho >= cp.square(y))
-    # constraints.append(cp.sum(cp.square(y), axis=1) <= p_dl)
-    rho_sens = cp.sum(rho, axis=1, keepdims=True)
-    Ap = A @ rho_sens
-    crlb = b - nu * Ap
-
-    constraints.append(crlb <= 0)
-
-    objective = cp.Minimize(cp.sum(cp.square(y)))
-    # objective = cp.Minimize(cp.sum(rho))
-
-    problem = cp.Problem(objective, constraints)
-    # problem.solve()
-    problem.solve(solver=cp.MOSEK, verbose=True)
-
-    return np.square(y.value)
-
-
 def decouple_optimization(v, varsigma, q_a, q_b, q_c, nu, gamma_thr, p_dl, verbose=False):
     # Carefully check the normalization of input
     M, K = varsigma.shape
@@ -720,7 +670,9 @@ def decouple_optimization(v, varsigma, q_a, q_b, q_c, nu, gamma_thr, p_dl, verbo
         scale = num / denom
         scale = max(scale[0, 0], 1)
         opt_power = np.array(opt_power) * scale
-        opt_power = np.minimum(opt_power, p_dl)
+        row_sums = np.sum(opt_power, axis=1, keepdims=True)
+        scaling_factors = np.minimum(1, p_dl / np.maximum(row_sums, p_dl))
+        opt_power = opt_power * scaling_factors
     else:
         opt_power = None  # Indicate failure
 
