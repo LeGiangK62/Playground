@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import csv
 import json
 import time
-import pandas as pd  # for Excel export
+import pandas as pd
 
 # Settings
 years = range(2018, 2025)
@@ -13,14 +13,14 @@ keyw = 'quantum'
 # Output filenames
 file_name_txt = f"{keyw}_papers.txt"
 file_name_csv = f"{keyw}_papers.csv"
-file_name_json = "all_papers.json"
-file_name_excel = "all_papers.xlsx"
+file_name_json = f"{keyw}_papers.json"
+file_name_excel = f"{keyw}_papers.xlsx"
 
 # Storage
-quantum_papers = []
-all_papers = {}
+quantum_papers = []  # List of (year, title)
+filtered_papers = {}  # Dict: year -> [titles]
 
-print(f"\nCrawling {keyw}-related papers in AAAI-{years[0]} to AAAI-{years[-1]}")
+print(f"\nCrawling '{keyw}' papers from AAAI-{years[0]} to AAAI-{years[-1]}")
 
 for year in years:
     url = base_url.format(year)
@@ -29,44 +29,43 @@ for year in years:
     soup = BeautifulSoup(response.text, 'html.parser')
 
     entries = soup.find_all('li', class_='entry inproceedings')
-    year_titles = []
+    matched_titles = []
 
     for entry in entries:
         title_tag = entry.find('cite')
         if title_tag:
             title = title_tag.text.strip()
-            year_titles.append(title)
             if keyw.lower() in title.lower():
                 quantum_papers.append((year, title))
+                matched_titles.append(title)
 
-    all_papers[year] = year_titles
-    print(
-        f"  Found {len(year_titles)} total papers, {sum(1 for t in year_titles if keyw.lower() in t.lower())} related to '{keyw}'")
+    if matched_titles:
+        filtered_papers[year] = matched_titles
+        print(f"  Found {len(matched_titles)} '{keyw}' papers in {year}")
     time.sleep(1)
 
-# Save quantum papers to text
+# Save to text
 with open(file_name_txt, "w", encoding="utf-8") as txt_file:
     for year, title in quantum_papers:
         txt_file.write(f"[{year}] {title}\n")
 
-# Save quantum papers to CSV
+# Save to CSV
 with open(file_name_csv, "w", encoding="utf-8", newline='') as csv_file:
     writer = csv.writer(csv_file)
     writer.writerow(["Year", "Title"])
     writer.writerows(quantum_papers)
 
-# Save all papers to JSON
+# Save to JSON
 with open(file_name_json, "w", encoding="utf-8") as json_file:
-    json.dump(all_papers, json_file, indent=2, ensure_ascii=False)
+    json.dump(filtered_papers, json_file, indent=2, ensure_ascii=False)
 
-# Save all papers to Excel
-excel_data = []
-for year, titles in all_papers.items():
-    for title in titles:
-        excel_data.append({"Year": year, "Title": title})
-
+# Save to Excel
+excel_data = [{"Year": year, "Title": title} for year, titles in filtered_papers.items() for title in titles]
 df = pd.DataFrame(excel_data)
 df.to_excel(file_name_excel, index=False)
 
-print(f"\nSaved {len(quantum_papers)} '{keyw}' papers to {file_name_txt} and {file_name_csv}")
-print(f"Saved all {sum(len(t) for t in all_papers.values())} papers to {file_name_json} and {file_name_excel}")
+print(f"\n✅ Saved {len(quantum_papers)} '{keyw}' papers to:")
+print(f"  → {file_name_txt}")
+print(f"  → {file_name_csv}")
+print(f"  → {file_name_json}")
+print(f"  → {file_name_excel}")
