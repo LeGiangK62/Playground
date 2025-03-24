@@ -1,0 +1,35 @@
+[2018] Peng Zhang, Jiabin Niu, Zhan Su, Benyou Wang, Liqun Ma, Dawei Song: End-to-End Quantum-like Language Models with Application to Question Answering.  5666-5673
+[2018] Tianshu Wang, Yuexian Hou, Panpan Wang, Xiaolei Niu: Exploring Relevance Judgement Inspired by Quantum Weak Measurement.  8171-8172
+[2019] Chengqiang Lu, Qi Liu, Chao Wang, Zhenya Huang, Peize Lin, Lixin He: Molecular Property Prediction: A Multilevel Quantum Interactions Modeling Perspective.  1052-1060
+[2019] Riccardo Rasconi, Angelo Oddi: An Innovative Genetic Algorithm for the Quantum Circuit Compilation Problem.  7707-7714
+[2019] Prayag Tiwari, Massimo Melucci: Binary Classifier Inspired by Quantum Theory.  10051-10052
+[2020] Tuhin Sahai, Anurag Mishra, Jose Miguel Pasini, Susmit Jha: Estimating the Density of States of Boolean Satisfiability Problems on Classical and Quantum Computing Platforms.  1627-1635
+[2020] Sami Khairy, Ruslan Shaydulin, Lukasz Cincio, Yuri Alexeev, Prasanna Balaprakash: Learning to Optimize Variational Quantum Circuits to Solve Combinatorial Problems.  2367-2375
+[2020] Feidiao Yang, Jiaqing Jiang, Jialin Zhang, Xiaoming Sun: Revisiting Online Quantum State Learning.  6607-6614
+[2020] Ece C. Mutlu: Quantum Probabilistic Models Using Feynman Diagram Rules for Better Understanding the Information Diffusion Dynamics in Online Social Networks.  13730-13731
+[2021] Dimitris Gkoumas, Qiuchi Li, Shahram Dehdashti, Massimo Melucci, Yijun Yu, Dawei Song: Quantum Cognitively Motivated Decision Fusion for Video Sentiment Analysis.  827-835
+[2021] Guangxi Li, Zhixin Song, Xin Wang: VSQL: Variational Shadow Quantum Learning for Classification.  8357-8365
+[2021] Tongyang Li, Chunhao Wang, Shouvanik Chakrabarti, Xiaodi Wu: Sublinear Classical and Quantum Algorithms for General Matrix Games.  8465-8473
+[2021] Daochen Wang, Xuchen You, Tongyang Li, Andrew M. Childs: Quantum Exploration Algorithms for Multi-Armed Bandits.  10102-10110
+[2021] Qiuchi Li, Dimitris Gkoumas, Alessandro Sordoni, Jian-Yun Nie, Massimo Melucci: Quantum-inspired Neural Network for Conversational Emotion Recognition.  13270-13278
+[2021] Guangcheng Liu, Yuexian Hou, Shikai Song: A Quantum-inspired Complex-valued Representation for Encoding Sentiment Information (Student Abstract).  15831-15832
+[2021] Carla Silva, Ana Aguiar, Inês Dutra: Quantum Binary Classification (Student Abstract).  15889-15890
+[2022] Mohsen Heidari, Ananth Grama, Wojciech Szpankowski: Toward Physically Realizable Quantum Neural Networks.  6902-6909
+[2022] Daniel Silver, Tirthak Patel, Devesh Tiwari: QUILT: Effective Multi-Class Classification on Quantum Computers Using an Ensemble of Diverse Quantum Classifiers.  8324-8332
+[2023] Afrad Basheer, Yuan Feng, Christopher Ferrie, Sanjiang Li: Alternating Layered Variational Quantum Circuits Can Be Classically Optimized Efficiently Using Classical Shadows.  6770-6778
+[2023] Zhihao Cheng, Kaining Zhang, Li Shen, Dacheng Tao: Offline Quantum Reinforcement Learning in a Conservative Manner.  7148-7156
+[2023] Daniel Silver, Tirthak Patel, Aditya Ranjan, Harshitta Gandhi, William Cutler, Devesh Tiwari: SLIQ: Quantum Image Similarity Networks on Noisy Quantum Computers.  9846-9854
+[2023] Zongqi Wan, Zhijie Zhang, Tongyang Li, Jialin Zhang, Xiaoming Sun: Quantum Multi-Armed Bandits and Stochastic Linear Bandits Enjoy Logarithmic Regrets.  10087-10094
+[2023] Won Joon Yun, Jihong Park, Joongheon Kim: Quantum Multi-Agent Meta Reinforcement Learning.  11087-11095
+[2023] Junwei Zhang, Ruifang He, Fengyu Guo: Quantum-Inspired Representation for Long-Tail Senses of Word Sense Disambiguation.  13949-13957
+[2023] Hankyul Baek, Won Joon Yun, Joongheon Kim: FV-Train: Quantum Convolutional Neural Network Training with a Finite Number of Qubits by Extracting Diverse Features (Student Abstract).  16156-16157
+[2023] Joseph A. Gallego-Mejia, Oscar A. Bustos-Brinez, Fabio A. González: LEAN-DMKDE: Quantum Latent Density Estimation for Anomaly Detection (Student Abstract).  16210-16211
+[2024] Yoni Choukroun, Lior Wolf: Deep Quantum Error Correction.  64-72
+[2024] Chunyu Hu, Hong Zhang, Chao Liang, Hao Huang: QI-IRA: Quantum-Inspired Interactive Ranking Aggregation for Person Re-identification.  2202-2210
+[2024] Gautham Anil, Vishnu Vinod, Apurva Narayan: Generating Universal Adversarial Perturbations for Quantum Classifiers.  10891-10899
+[2024] Zhimin He, Maijie Deng, Shenggen Zheng, Lvzhou Li, Haozhen Situ: Training-Free Quantum Architecture Search.  12430-12438
+[2024] Hao-Kai Zhang, Chengkai Zhu, Geng Liu, Xin Wang: Exponential Hardness of Optimization from the Locality in Quantum Neural Networks.  16741-16749
+[2024] Zipeng Fan, Jing Zhang, Peng Zhang, Qianxi Lin, Hui Gao: Quantum-Inspired Neural Network with Runge-Kutta Method.  17977-17984
+[2024] Junwei Zhang, Ruifang He, Fengyu Guo, Chang Liu: Quantum Interference Model for Semantic Biases of Glosses in Word Sense Disambiguation.  19551-19559
+[2024] Xingqiang Zhao, Hai Wan, Kunxun Qi: QPEN: Quantum Projection and Quantum Entanglement Enhanced Network for Cross-Lingual Aspect-Based Sentiment Analysis.  19670-19678
+[2024] Aryaman Rao, Parth Singh, Dinesh Kumar Vishwakarma, Mukesh Prasad: DQSSA: A Quantum-Inspired Solution for Maximizing Influence in Online Social Networks (Student Abstract).  23628-23630
